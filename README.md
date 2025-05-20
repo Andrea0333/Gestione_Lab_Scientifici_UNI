@@ -1,2 +1,2 @@
-# Gestione_Lab_Scientifici_UNI
+# Gestione Laoratori Scientifici Universitari
 Servizio web per l'esame Basi di Dati
