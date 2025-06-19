@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Home - Gestione Laboratori Universitari </title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-light bg-white shadow-sm mb-4">
+  <div class="container">
+    <a class="navbar-brand" href="#">Gestione Laboratori Universitari</a>
+    <a class="btn btn-outline-primary" href="{% url 'login' %}">Login</a>
+      <a class="btn btn-primary" href="{% url 'registration' %}">Registrati</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h2 class="mb-4">Progetti Sperimentali</h2>
+  {% if progetti %}
+    <div class="row">
+      {% for progetto in progetti %}
+        <div class="col-md-6 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">{{ progetto.titolo }}</h5>
+              <p class="card-text">{{ progetto.descrizione|truncatewords:25 }}</p>
+              <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#exp-{{ progetto.id_progetto }}">
+                Vedi Esperimenti
+              </button>
+              <div class="collapse mt-3" id="exp-{{ progetto.id_progetto }}">
+                <ul class="list-group">
+                  {% for exp in progetto.esperimento_set.all %}
+                    <li class="list-group-item">
+                      <strong>{{ exp.titolo }}</strong><br>
+                      {{ exp.descrizione|truncatewords:15 }}
+                    </li>
+                  {% empty %}
+                    <li class="list-group-item text-muted">Nessun esperimento</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">Nessun progetto disponibile.</p>
+  {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
