@@ -11,7 +11,7 @@
   <div class="container">
     <a class="navbar-brand" href="#">Gestione Laboratori Universitari</a>
     <a class="btn btn-outline-primary" href="{% url 'login' %}">Login</a>
-      <a class="btn btn-primary" href="{% url 'registration' %}">Registrati</a>
+      <a class="btn btn-primary" href="{% url 'registrazione' %}">Registrati</a>
   </div>
 </nav>
 
@@ -24,7 +24,8 @@
           <div class="card h-100 shadow-sm">
             <div class="card-body">
               <h5 class="card-title">{{ progetto.titolo }}</h5>
-              <p class="card-text">{{ progetto.descrizione|truncatewords:25 }}</p>
+              <h5 class="card-title"> Prof. {{ progetto.responsabile.utente.cognome }}</h5>
+              <p class="card-text"> {{ progetto.descrizione|truncatewords:25 }}</p>
               <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#exp-{{ progetto.id_progetto }}">
                 Vedi Esperimenti
               </button>

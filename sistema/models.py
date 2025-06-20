@@ -92,7 +92,7 @@ class PrenotazioneLaboratorio(models.Model):
     id_prenotazione = models.AutoField(primary_key=True)
     professore = models.ForeignKey(Professore, on_delete=models.CASCADE)
     laboratorio = models.ForeignKey(Laboratorio, on_delete=models.CASCADE)
-    esperimento = models.ForeignKey(Esperimento, on_delete=models.CASCADE)
+    esperimento = models.OneToOneField(Esperimento, on_delete=models.CASCADE)  # Ogni esperimento ha una sola prenotazione
     data = models.DateField()
     ora_inizio = models.TimeField()
     ora_fine = models.TimeField()
@@ -102,7 +102,7 @@ class PrenotazioneLaboratorio(models.Model):
 
 class PrenotazioneAttrezzatura(models.Model):
     id_prenotazione = models.AutoField(primary_key=True)
-    professore = models.OneToOneField(Professore, on_delete=models.CASCADE)
+    professore = models.ForeignKey(Professore, on_delete=models.CASCADE)
     attrezzatura = models.ForeignKey(Attrezzatura, on_delete=models.CASCADE)
     esperimento = models.ForeignKey(Esperimento, on_delete=models.CASCADE)
     data = models.DateField()

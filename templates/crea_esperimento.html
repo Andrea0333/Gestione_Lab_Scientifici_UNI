@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Nuovo Esperimento</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <h2 class="mb-4">Crea un nuovo Esperimento per il progetto: <strong>{{ progetto.titolo }}</strong></h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Dettagli Esperimento -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">Dati Esperimento</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Titolo</label>
+                    <input type="text" name="titolo" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Descrizione</label>
+                    <textarea name="descrizione" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Obiettivi</label>
+                    <textarea name="obiettivi" class="form-control" rows="2" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Materiali</label>
+                    <textarea name="materiali" class="form-control" rows="2" required></textarea>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label class="form-label">Data Inizio</label>
+                        <input type="date" name="data_inizio" class="form-control" required>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Data Fine</label>
+                        <input type="date" name="data_fine" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prenotazione Laboratorio -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">Prenotazione Laboratorio</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Laboratorio</label>
+                    <select name="laboratorio" class="form-select" required>
+                        <option value="">-- Seleziona --</option>
+                        {% for lab in laboratori %}
+                            <option value="{{ lab.id_laboratorio }}">{{ lab.nome }} - {{ lab.edificio }} - Stanza {{ lab.stanza }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label class="form-label">Data</label>
+                        <input type="date" name="data" class="form-control" required>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Ora Inizio</label>
+                        <input type="time" name="ora_inizio" class="form-control" required>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Ora Fine</label>
+                        <input type="time" name="ora_fine" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prenotazione Attrezzatura -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">Prenotazione Attrezzatura</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Attrezzatura</label>
+                    <select name="attrezzatura" class="form-select" required>
+                        <option value="">-- Seleziona --</option>
+                        {% for att in attrezzature %}
+                            <option value="{{ att.id_attrezzatura }}">{{ att.nome }} ({{ att.marca }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="text-end">
+            <button type="submit" class="btn btn-success">Crea Esperimento</button>
+            <a href="{% url 'dashboard_professore' %}" class="btn btn-outline-secondary">Annulla</a>
+        </div>
+
+    </form>
+</div>
+</body>
+</html>
