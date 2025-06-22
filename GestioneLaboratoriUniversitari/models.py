@@ -67,6 +67,7 @@ class ProgettoSperimentale(models.Model):
     obiettivi = models.TextField()
     data_inizio = models.DateField()
     data_fine = models.DateField()
+    max_partecipanti = models.PositiveIntegerField(default=15)
 
 
 class Esperimento(models.Model):
@@ -77,6 +78,7 @@ class Esperimento(models.Model):
     materiali = models.TextField()
     data_inizio = models.DateField()
     data_fine = models.DateField()
+    max_partecipanti = models.PositiveIntegerField(default=15)
 
 
 class PrenotazioneLaboratorio(models.Model):
