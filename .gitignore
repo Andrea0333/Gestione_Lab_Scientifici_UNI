@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+env/
+ENV/
+venv/
+pip-log.txt
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+staticfiles/
+local_settings.py
+
+# VSCode / IDE
+.vscode/
+.idea/
+
+# Mac system files
+.DS_Store
+
+# Pytest / coverage
+htmlcov/
+.coverage
+.tox/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+
+# Migrations (optional: useful if you want clean migrations per clone)
+**/migrations/*.py
+**/migrations/*.pyc
+!*/migrations/__init__.py
