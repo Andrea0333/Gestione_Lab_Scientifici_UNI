@@ -137,3 +137,58 @@ class ProgettoSperimentaleForm(forms.ModelForm):
             'data_inizio': forms.DateInput(attrs={'type': 'date'}),
             'data_fine': forms.DateInput(attrs={'type': 'date'}),
         }
+
+
+# forms.py
+from .models import Laboratorio, Attrezzatura
+
+
+class CreaEsperimentoForm(forms.Form):
+    #esperimento
+    titolo = forms.CharField(max_length=100)
+    descrizione = forms.CharField(widget=forms.Textarea)
+    obiettivi = forms.CharField(widget=forms.Textarea)
+
+    #prenotazione
+    laboratorio = forms.ModelChoiceField(queryset=Laboratorio.objects.all(), label="Laboratorio")
+    attrezzature = forms.ModelMultipleChoiceField(
+        queryset=Attrezzatura.objects.filter(stato='Funzionante'),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
+    data_prenotazione = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    ora_inizio = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
+    ora_fine = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
+
+    #  evitare conflitti (RF8)
+    def clean(self):
+        cleaned_data = super().clean()
+        lab = cleaned_data.get("laboratorio")
+        data = cleaned_data.get("data_prenotazione")
+        inizio = cleaned_data.get("ora_inizio")
+        fine = cleaned_data.get("ora_fine")
+
+        if lab and data and inizio and fine:
+            #controllo conflitti per il laboratorio
+            prenotazioni_lab_conflitto = PrenotazioneLaboratorio.objects.filter(
+                laboratorio=lab,
+                data=data,
+                ora_fine__gt=inizio,
+                ora_inizio__lt=fine
+            )
+            if prenotazioni_lab_conflitto.exists():
+                self.add_error('laboratorio', "Il laboratorio è già prenotato in questa fascia oraria.")
+
+            #controlla conflitti per  attrezzature
+            attrezzature_selezionate = cleaned_data.get('attrezzature', [])
+            for attr in attrezzature_selezionate:
+                prenotazioni_attr_conflitto = PrenotazioneAttrezzatura.objects.filter(
+                    codice_inventario=attr,
+                    data=data,
+                    ora_fine__gt=inizio,
+                    ora_inizio__lt=fine
+                )
+                if prenotazioni_attr_conflitto.exists():
+                    self.add_error('attrezzature', f"L'attrezzatura '{attr}' è già prenotata in questa fascia oraria.")
+
+        return cleaned_data

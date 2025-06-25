@@ -217,10 +217,10 @@ def crea_progetto_view(request):
     if request.method == 'POST':
         form = ProgettoSperimentaleForm(request.POST)
         if form.is_valid():
-            #Creiamo l'oggetto progetto ma non lo salviamo ancora nel DB
+            #creiamo il progetto ma non lo salviamo ancora nel DB
             progetto = form.save(commit=False)
 
-            #Associamo il professore loggato al progetto
+            #associamo la matricola del professore al progetto
             matricola_professore = request.session.get('matricola')
             professore = Utente.objects.get(matricola=matricola_professore)
             progetto.docente = professore
@@ -228,7 +228,7 @@ def crea_progetto_view(request):
 
             progetto.save()
 
-            # Reindirizziamo alla dashboard del professore
+            #reindirizziamo alla dashboard del professore
             return redirect('dashboard_professore')
     else:
         form = ProgettoSperimentaleForm()
@@ -237,3 +237,105 @@ def crea_progetto_view(request):
         'form': form
     }
     return render(request, 'professore/crea_progetto.html', context)
+
+
+def dettaglio_progetto_view(request, progetto_id):
+
+    if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Professore':
+        return redirect('login')
+
+    progetto = get_object_or_404(ProgettoSperimentale, id_progetto=progetto_id)
+
+    # assicuriamoci che il professore che richiede la pagina sia il proprietario del progetto
+    if progetto.docente.matricola != request.session.get('matricola'):
+        # Se non è il proprietario, reindirizzalo alla sua dashboard
+        return redirect('dashboard_professore')
+
+    esperimenti = Esperimento.objects.filter(progetto=progetto)
+
+    context = {
+        'progetto': progetto,
+        'esperimenti': esperimenti
+    }
+    return render(request, 'professore/dettaglio_progetto.html', context)
+
+
+def crea_esperimento_view(request, progetto_id):
+    if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Professore':
+        return redirect('login')
+
+    progetto = get_object_or_404(ProgettoSperimentale, id_progetto=progetto_id)
+    professore = get_object_or_404(Utente, matricola=request.session.get('matricola'))
+
+    if progetto.docente != professore:
+        return redirect('dashboard_professore')
+
+    if request.method == 'POST':
+        form = CreaEsperimentoForm(request.POST)
+        if form.is_valid():
+            dati = form.cleaned_data
+
+            #1 crea l'esperimento
+            nuovo_esperimento = Esperimento.objects.create(
+                progetto=progetto,
+                titolo=dati['titolo'],
+                descrizione=dati['descrizione'],
+                obiettivi=dati['obiettivi'],
+                data_inizio=dati['data_prenotazione'],
+                data_fine=dati['data_prenotazione']
+            )
+
+            #2  prenotazione del laboratorio
+            PrenotazioneLaboratorio.objects.create(
+                docente=professore,
+                laboratorio=dati['laboratorio'],
+                esperimento=nuovo_esperimento,
+                data=dati['data_prenotazione'],
+                ora_inizio=dati['ora_inizio'],
+                ora_fine=dati['ora_fine']
+            )
+
+            #3  prenotazioni per le attrezzature
+            for attrezzatura in dati['attrezzature']:
+                PrenotazioneAttrezzatura.objects.create(
+                    docente=professore,
+                    codice_inventario=attrezzatura,
+                    esperimento=nuovo_esperimento,
+                    data=dati['data_prenotazione'],
+                    ora_inizio=dati['ora_inizio'],
+                    ora_fine=dati['ora_fine']
+                )
+
+            return redirect('dettaglio_progetto', progetto_id=progetto.id_progetto)
+    else:
+        form = CreaEsperimentoForm()
+
+    return render(request, 'professore/crea_esperimento.html', {'form': form, 'progetto': progetto})
+
+
+# views.py
+from django.shortcuts import get_object_or_404  # Assicurati che sia importato
+
+
+def elimina_progetto_view(request, progetto_id):
+
+    #solo professori autenticati
+    if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Professore':
+        return redirect('login')
+
+    progetto = get_object_or_404(ProgettoSperimentale, id_progetto=progetto_id)
+
+    #il professore può eliminare solo i propri progetti
+    if progetto.docente.matricola != request.session.get('matricola'):
+        return redirect('dashboard_professore')
+
+
+    if request.method == 'POST':
+        progetto.delete()
+        return redirect('dashboard_professore')
+
+
+    context = {
+        'progetto': progetto
+    }
+    return render(request, 'professore/conferma_eliminazione.html', context)

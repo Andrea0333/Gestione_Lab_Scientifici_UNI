@@ -2,53 +2,64 @@
 {% block content %}
 <div class="container mt-4">
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
     <div>
       <h3>Dashboard Professore</h3>
-      <p class="text-muted">Benvenuto, {{ professore.nome }} {{ professore.cognome }}!</p>
+      <p class="text-muted mb-0">Benvenuto, {{ professore.nome }} {{ professore.cognome }}!</p>
     </div>
-
-    {# Raggruppiamo i pulsanti di azione #}
     <div class="d-flex gap-2">
+      {# RF4: Link alla pagina di creazione di un nuovo progetto #}
       <a href="{% url 'crea_progetto' %}" class="btn btn-primary">
         <i class="bi bi-plus-circle-fill me-2"></i>Crea Nuovo Progetto
       </a>
-
-      {# --- BLOCCO AGGIUNTO PER IL LOGOUT --- #}
-      {# Questo link punta all'URL con name='logout' che abbiamo già definito #}
+      {# RF11: Link per effettuare il logout #}
       <a href="{% url 'logout' %}" class="btn btn-danger">
         <i class="bi bi-box-arrow-right me-2"></i>Logout
       </a>
-      {# ------------------------------------ #}
     </div>
-
   </div>
 
-  <div class="card">
+  {# ELENCO DEI PROGETTI ESISTENTI #}
+  <div class="card shadow-sm">
     <div class="card-header">
-      I Tuoi Progetti Sperimentali
+      <h5 class="mb-0">I Tuoi Progetti Sperimentali</h5>
     </div>
     <div class="card-body">
+      {# Controlla se esistono progetti creati da questo professore #}
       {% if progetti %}
         <ul class="list-group list-group-flush">
+          {# Itera su ogni progetto passato dalla vista 'dashboard_professore' #}
           {% for progetto in progetti %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
+            <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+              {# Dettagli del progetto #}
               <div>
-                <h5 class="mb-1">{{ progetto.titolo }}</h5>
+                <h6 class="mb-1">{{ progetto.titolo }}</h6>
                 <small class="text-muted">
-                  Dal {{ progetto.data_inizio|date:"d/m/Y" }} al {{ progetto.data_fine|date:"d/m/Y" }} - Posti: {{ progetto.max_posti }}
+                  Periodo: {{ progetto.data_inizio|date:"d/m/Y" }} - {{ progetto.data_fine|date:"d/m/Y" }} | Posti disponibili: {{ progetto.max_posti }}
                 </small>
               </div>
-              <div>
-                <a href="#" class="btn btn-outline-info btn-sm">Gestisci Esperimenti</a>
-                <a href="#" class="btn btn-outline-danger btn-sm">Elimina</a>
+
+              {# Pulsanti di azione per ogni singolo progetto #}
+              <div class="d-flex gap-2">
+
+                <a href="{% url 'dettaglio_progetto' progetto.id_progetto %}" class="btn btn-outline-info btn-sm">
+                    <i class="bi bi-ui-checks-grid me-1"></i>Gestisci Progetto
+                </a>
+
+                 <a href="{% url 'elimina_progetto' progetto.id_progetto %}" class="btn btn-outline-danger btn-sm">
+                     <i class="bi bi-trash3 me-1"></i>Elimina
+                </a>
               </div>
+
             </li>
           {% endfor %}
         </ul>
       {% else %}
-        <div class="alert alert-info" role="alert">
-          Non hai ancora creato nessun progetto. <a href="{% url 'crea_progetto' %}" class="alert-link">Inizia ora!</a>
+
+        <div class="alert alert-info mb-0" role="alert">
+          Non hai ancora creato nessun progetto. <a href="{% url 'crea_progetto' %}" class="alert-link">Inizia ora creando il tuo primo progetto!</a>
         </div>
       {% endif %}
     </div>
