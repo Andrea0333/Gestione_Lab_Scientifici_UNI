@@ -46,10 +46,13 @@
                 <a href="{% url 'dettaglio_progetto' progetto.id_progetto %}" class="btn btn-outline-info btn-sm">
                     <i class="bi bi-ui-checks-grid me-1"></i>Gestisci Progetto
                 </a>
-
-                 <a href="{% url 'elimina_progetto' progetto.id_progetto %}" class="btn btn-outline-danger btn-sm">
+                  <a href="{% url 'elimina_progetto' progetto.id_progetto %}" class="btn btn-outline-danger btn-sm">
                      <i class="bi bi-trash3 me-1"></i>Elimina
                 </a>
+                  {# LINK PER TESTARE MANIPOLAZIONE URL #}
+                 <a href="{% url 'elimina_progetto_vulnerabile' progetto.id_progetto %}" class="btn btn-warning btn-sm">Elimina (Vulnerabile)
+                 </a>
+
               </div>
 
             </li>

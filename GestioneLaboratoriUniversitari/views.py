@@ -469,7 +469,7 @@ def partecipa_progetto_view(request, progetto_id):
 
 
 
-# views.py
+
 def partecipa_esperimento_view(request, esperimento_id):
     # Protezione: solo studenti autenticati
     if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Studente':
@@ -498,3 +498,23 @@ def partecipa_esperimento_view(request, esperimento_id):
         return redirect('dettaglio_progetto', progetto_id=progetto.id_progetto)
 
     return redirect('dettaglio_progetto', progetto_id=progetto.id_progetto)
+
+
+
+#CODICE CHE PERMETTE UN ATTACCO DI TIPO MANIPOLAZIONE URL
+def elimina_progetto_view_vulnerabile(request, progetto_id):
+    progetto = get_object_or_404(ProgettoSperimentale, id_progetto=progetto_id)
+
+    #DISATTIVIAMO LA PROTEZIONE  CHE ABBIAMO IMPLEMENTATO
+    # if progetto.docente.matricola != request.session.get('matricola'):
+    #     messages.error(request, "Non sei autorizzato a eseguire questa operazione.")
+    #     return redirect('dashboard_professore')
+
+
+    if request.method == 'POST':
+        progetto.delete()
+        messages.success(request, f"Il progetto '{progetto.titolo}' è stato eliminato tramite manipolazione URL.")
+        return redirect('dashboard_professore')
+
+    # SENZA IL CONTROLLO, LA VISTA PROCEDE E MOSTRA LA PAGINA DI CONFERMA
+    return render(request, 'professore/conferma_eliminazione.html', {'progetto': progetto})

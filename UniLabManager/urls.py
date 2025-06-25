@@ -41,9 +41,12 @@ urlpatterns = [
 
     path('esperimento/<int:esperimento_id>/elimina/', views.elimina_esperimento_view, name='elimina_esperimento'),
 
-
+    #URL SICURO
     path('progetto/<int:progetto_id>/elimina/', views.elimina_progetto_view, name='elimina_progetto'),
 
+    #URL VULNERABILE
+
+    path('progetto/<int:progetto_id>/elimina-vulnerabile/', views.elimina_progetto_view_vulnerabile, name='elimina_progetto_vulnerabile'),
 
     path('dashboard/studente/', views.dashboard_studente, name='dashboard_studente'),
 

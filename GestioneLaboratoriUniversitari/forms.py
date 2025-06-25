@@ -6,7 +6,7 @@ from django.contrib.auth.hashers import make_password  # Importiamo solo la funz
 import re
 
 
-# --- Form di Base modificato per non usare UserCreationForm ---
+#form di base
 class BaseUserRegistrationForm(forms.ModelForm):
     # Aggiungiamo manualmente i campi per la password, che ModelForm non ha.
     password = forms.CharField(
@@ -22,12 +22,11 @@ class BaseUserRegistrationForm(forms.ModelForm):
 
     class Meta:
         model = Utente
-        # Campi del modello che vogliamo mostrare automaticamente nel form.
-        # Escludiamo il campo 'password' del modello, perché lo gestiamo noi.
+
         fields = ('matricola', 'nome', 'cognome', 'email')
 
     def clean_password2(self):
-        # Controlliamo che le due password inserite nel form coincidano.
+        # controlliamo che le due password inserite nel form coincidano.
         cd = self.cleaned_data
         if 'password' in cd and 'password2' in cd:
             if cd['password'] != cd['password2']:
@@ -47,8 +46,7 @@ class BaseUserRegistrationForm(forms.ModelForm):
         return user
 
 
-# --- Form specifico per il Professore ---
-# Eredita dal nostro nuovo form di base. Il nome è stato cambiato per coerenza.
+# FORM PROFESSORE
 class ProfessoreForm(BaseUserRegistrationForm):
     dipartimento = forms.CharField(max_length=100)
     materia = forms.CharField(max_length=100)
@@ -62,11 +60,10 @@ class ProfessoreForm(BaseUserRegistrationForm):
         return matricola
 
     def save(self, commit=True):
-        # Chiama il save del genitore (BaseUserRegistrationForm) per ottenere
-        # l'istanza dell'utente con la password già hashata.
+        # usiamo il save di BaseUserRegistrationForm in modo da hashare la pass
         user = super().save(commit=False)
 
-        # Imposta il ruolo e i campi specifici del professore.
+        #  ruolo e i campi specifici del professore.
         user.ruolo = Ruolo.PROFESSORE
         user.dipartimento = self.cleaned_data.get('dipartimento')
         user.materia = self.cleaned_data.get('materia')
@@ -76,7 +73,7 @@ class ProfessoreForm(BaseUserRegistrationForm):
         return user
 
 
-# --- Form specifico per lo Studente ---
+#FORM STUDENTE
 class StudenteForm(BaseUserRegistrationForm):
     corso_di_studi = forms.CharField(max_length=100)
     anno = forms.IntegerField(min_value=1, max_value=5)
@@ -100,7 +97,7 @@ class StudenteForm(BaseUserRegistrationForm):
         return user
 
 
-# --- Form specifico per il Tecnico ---
+#FORM TECNICO
 class TecnicoForm(BaseUserRegistrationForm):
     area_competenza = forms.CharField(max_length=100)
     is_responsabile = forms.BooleanField(required=False, label="È responsabile di un laboratorio?")
@@ -128,7 +125,7 @@ class TecnicoForm(BaseUserRegistrationForm):
 class ProgettoSperimentaleForm(forms.ModelForm):
     class Meta:
         model = ProgettoSperimentale
-        # Campi che l'utente potrà compilare
+
         fields = ['titolo', 'descrizione', 'obiettivi', 'data_inizio', 'data_fine', 'max_posti']
 
         widgets = {
@@ -151,11 +148,12 @@ class CreaEsperimentoForm(forms.Form):
 
     #prenotazione
     laboratorio = forms.ModelChoiceField(queryset=Laboratorio.objects.all(), label="Laboratorio")
-    attrezzature = forms.ModelMultipleChoiceField(
+    attrezzature = (forms.ModelMultipleChoiceField
+        (
         queryset=Attrezzatura.objects.filter(stato='Funzionante'),
         widget=forms.CheckboxSelectMultiple,
         required=False
-    )
+    ))
     data_prenotazione = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     ora_inizio = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
     ora_fine = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
@@ -195,7 +193,7 @@ class CreaEsperimentoForm(forms.Form):
 
 
 
-# forms.py
+
 class AttrezzaturaForm(forms.ModelForm):
     class Meta:
         model = Attrezzatura
