@@ -32,10 +32,6 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
 
     path('dashboard/professore/', views.dashboard_professore, name='dashboard_professore'),
-path('dashboard/professore/crea/', views.crea_progetto, name='crea_progetto'),
-    path('dashboard/professore/<int:progetto_id>/elimina/', views.elimina_progetto, name='elimina_progetto'),
-    path('dashboard/professore/<int:progetto_id>/esperimenti/', views.visualizza_esperimenti, name='visualizza_esperimenti'),
-path('dashboard/professore/<int:progetto_id>/esperimenti/crea/', views.crea_esperimento, name='crea_esperimento'),
 
     path('dashboard/studente/', views.dashboard_studente, name='dashboard_studente'),
     path('dashboard/tecnico/', views.dashboard_tecnico, name='dashboard_tecnico'),

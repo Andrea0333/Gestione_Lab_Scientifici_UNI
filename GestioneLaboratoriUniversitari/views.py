@@ -3,175 +3,210 @@ from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 
-from .forms import ProfessoreForm, StudenteForm, TecnicoForm, ProgettoForm, EsperimentoForm
-from .models import (Profilo, Professore, Studente, Tecnico,
-                     ProgettoSperimentale, Esperimento,
-                     PrenotazioneLaboratorio, PrenotazioneAttrezzatura)
+from .forms import *
+from .models import *
+from django.contrib.auth.hashers import check_password
 
-# ------------------------------------
-# PAGINE PUBBLICHE
-# ------------------------------------
+
+# views.py
+
+# Aggiungi questa vista al tuo views.py
 
 def home_view(request):
-    return render(request, 'home.html')
 
 
-def registrazione_view(request):
-    return render(request, 'registrazione.html')
+    # Controlla se l'utente ha una sessione attiva
+    if request.session.get('is_authenticated'):
+        ruolo = request.session.get('ruolo')
 
-# ------------------------------------
-# REGISTRAZIONE UTENTI
-# ------------------------------------
-
-def registrazione_professore_view(request):
-    form = ProfessoreForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        form.save()
-        messages.success(request, "Registrazione Professore completata. Ora puoi effettuare il login.")
-        return redirect('login')
-    return render(request, 'professore/registrazione_professore.html', {'form': form})
-
-
-def registrazione_studente_view(request):
-    form = StudenteForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        form.save()
-        messages.success(request, "Registrazione Studente completata. Ora puoi effettuare il login.")
-        return redirect('login')
-    return render(request, 'studente/registrazione_studente.html', {'form': form})
-
-
-def registrazione_tecnico_view(request):
-    form = TecnicoForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        form.save()
-        messages.success(request, "Registrazione Tecnico completata. Ora puoi effettuare il login.")
-        return redirect('login')
-    return render(request, 'tecnico/registrazione_tecnico.html', {'form': form})
-
-# ------------------------------------
-# AUTENTICAZIONE
-# ------------------------------------
-
-def login_view(request):
-    if request.method == 'POST':
-        matricola = request.POST.get('matricola')
-        password = request.POST.get('password')
-        user = authenticate(request, username=matricola, password=password)
-        if user is None:
-            messages.error(request, "Matricola o password errati.")
-            return render(request, 'login.html')
-
-        login(request, user)
-        try:
-            ruolo = user.profilo.ruolo
-        except Profilo.DoesNotExist:
-            logout(request)
-            messages.error(request, "Profilo non trovato: contatta l’amministratore.")
+        # Reindirizza alla dashboard corretta in base al ruolo
+        if ruolo == 'Professore':
+            return redirect('registrazione_professore')
+        elif ruolo == 'Studente':
+            return redirect('dashboard_studente')
+        elif ruolo == 'Tecnico':
+            return redirect('dashboard_tecnico')
+        else:
+            # Fallback nel caso in cui la sessione sia anomala
             return redirect('login')
 
-        if ruolo == 'professore':
-            return redirect('dashboard_professore')
-        elif ruolo == 'studente':
-            return redirect('dashboard_studente')
-        elif ruolo == 'tecnico':
-            return redirect('dashboard_tecnico')
+    # Se l'utente non è autenticato, mostra la home page pubblica
+    return render(request, 'home.html')
 
-        logout(request)
-        messages.error(request, "Ruolo utente non riconosciuto.")
-        return redirect('login')
+# Vista per la pagina di scelta
+def registrazione_view(request):
+    return render(request, 'registrazione.html') # Il tuo template 'registrazione.html' va benissimo
+
+# Vista per la registrazione del professore
+def registrazione_professore_view(request):
+    if request.method == 'POST':
+        form = ProfessoreForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # Puoi aggiungere un messaggio di successo qui
+            return redirect('login') # Reindirizza al login dopo il successo
+    else:
+        form = ProfessoreForm()
+    return render(request, 'professore/registrazione_professore.html', {'form': form})
+
+# Vista per la registrazione dello studente
+def registrazione_studente_view(request):
+    if request.method == 'POST':
+        form = StudenteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = StudenteForm()
+    return render(request, 'studente/registrazione_studente.html', {'form': form})
+
+# Vista per la registrazione del tecnico
+def registrazione_tecnico_view(request):
+    if request.method == 'POST':
+        form = TecnicoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = TecnicoForm()
+    return render(request, 'tecnico/registrazione_tecnico.html', {'form': form})
+
+
+
+
+
+
+# VISTA DI LOGIN
+
+
+def login_view(request):
+
+    if request.method == "POST":
+        matricola = request.POST.get('matricola')
+        password_in_chiaro = request.POST.get('password')
+
+        if not matricola or not password_in_chiaro:
+            return render(request, 'login.html', {'error_message': "Matricola e password sono obbligatorie."})
+
+        try:
+            utente = Utente.objects.get(matricola=matricola)
+
+            if check_password(password_in_chiaro, utente.password):
+                # Credenziali valide, salviamo i dati in sessione
+                request.session['matricola'] = utente.matricola
+                request.session['ruolo'] = utente.ruolo
+                request.session['is_authenticated'] = True
+
+                #  REDIRECT BASATO SUL RUOLO
+                if utente.ruolo == 'Professore':
+                    return redirect('dashboard_professore')
+                elif utente.ruolo == 'Studente':
+                    return redirect('dashboard_studente')
+                elif utente.ruolo == 'Tecnico':
+                    return redirect('dashboard_tecnico')
+            else:
+                return render(request, 'login.html', {'error_message': "Credenziali non valide, riprova."})
+
+        except Utente.DoesNotExist:
+            return render(request, 'login.html', {'error_message': "Credenziali non valide, riprova."})
+
     return render(request, 'login.html')
 
 
+# VISTA DI LOGOUT (RF11)
 def logout_view(request):
-    logout(request)
+
+    # request.session.flush() rimuove tutti i dati dalla sessione corrente.
+    request.session.flush()
     return redirect('login')
 
-# ------------------------------------
-# DASHBOARD PROFESSORE
-# ------------------------------------
 
-@login_required
+#
+# VISTA DASHBOARD PROFESSORE (RF3, RF4)
 def dashboard_professore(request):
-    progetti = ProgettoSperimentale.objects.filter(responsabile__user=request.user)
-    return render(request, 'professore/dashboard_professore.html', {'progetti': progetti})
+
+    # --- Controllo di autorizzazione ---
+    if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Professore':
+        return redirect('login')
+
+    try:
+        # Recupera l'utente dalla matricola salvata in sessione
+        matricola_professore = request.session.get('matricola')
+        professore = Utente.objects.get(matricola=matricola_professore)
+
+        # [cite_start]Recupera tutti i progetti sperimentali creati da questo professore [cite: 9]
+        progetti_creati = ProgettoSperimentale.objects.filter(docente=professore).order_by('-data_inizio')
+
+        context = {
+            'professore': professore,
+            'progetti': progetti_creati,
+        }
+        return render(request, 'professore/dashboard_professore.html', context)
+
+    except Utente.DoesNotExist:
+        # Se per qualche motivo l'utente non esiste più, effettua il logout
+        return redirect('logout')
 
 
-@login_required
-def crea_progetto(request):
-    form = ProgettoForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        progetto = form.save(commit=False)
-        professore = get_object_or_404(Professore, user=request.user)
-        progetto.responsabile = professore
-        progetto.save()
-        return redirect('dashboard_professore')
-    return render(request, 'professore/crea_progetto.html', {'form': form})
 
-
-@login_required
-def elimina_progetto(request, progetto_id):
-    progetto = get_object_or_404(ProgettoSperimentale, id=progetto_id, responsabile__user=request.user)
-    if request.method == 'POST':
-        progetto.delete()
-        return redirect('dashboard_professore')
-    return render(request, 'professore/conferma_eliminazione.html', {'progetto': progetto})
-
-
-@login_required
-def visualizza_esperimenti(request, progetto_id):
-    progetto = get_object_or_404(ProgettoSperimentale, id=progetto_id, responsabile__user=request.user)
-    esperimenti = Esperimento.objects.filter(progetto=progetto)
-    return render(request, 'professore/visualizza_esperimenti.html', {
-        'progetto': progetto,
-        'esperimenti': esperimenti,
-    })
-
-
-@login_required
-def crea_esperimento(request, progetto_id):
-    progetto = get_object_or_404(ProgettoSperimentale, id=progetto_id, responsabile__user=request.user)
-    professore = get_object_or_404(Professore, user=request.user)
-
-    form = EsperimentoForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        esperimento = form.save(commit=False)
-        esperimento.progetto = progetto
-        esperimento.save()
-
-        PrenotazioneLaboratorio.objects.create(
-            professore=professore,
-            laboratorio=form.cleaned_data['laboratorio'],
-            esperimento=esperimento,
-            data=form.cleaned_data['data'],
-            ora_inizio=form.cleaned_data['ora_inizio'],
-            ora_fine=form.cleaned_data['ora_fine']
-        )
-        for att in form.cleaned_data['attrezzature']:
-            PrenotazioneAttrezzatura.objects.create(
-                professore=professore,
-                attrezzatura=att,
-                esperimento=esperimento,
-                data=form.cleaned_data['data'],
-                ora_inizio=form.cleaned_data['ora_inizio'],
-                ora_fine=form.cleaned_data['ora_fine']
-            )
-        return redirect('visualizza_esperimenti', progetto_id=progetto.id)
-
-    return render(request, 'professore/crea_esperimento.html', {
-        'form': form,
-        'progetto': progetto,
-    })
-
-# ------------------------------------
-# DASHBOARD STUDENTE & TECNICO
-# ------------------------------------
-
-@login_required
+# VISTA DASHBOARD STUDENTE (RF3, RF9)
 def dashboard_studente(request):
-    return render(request, 'studente/dashboard_studente.html')
+
+    # --- Controllo di autorizzazione ---
+    if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Studente':
+        return redirect('login')
+
+    try:
+        matricola_studente = request.session.get('matricola')
+        studente = Utente.objects.get(matricola=matricola_studente)
+
+        # Recupera gli ID dei progetti a cui lo studente è già iscritto
+        progetti_iscritti_ids = PartecipazioneProgetto.objects.filter(studente=studente).values_list('progetto_id',
+                                                                                                     flat=True)
+
+        # Recupera gli oggetti ProgettoSperimentale a cui lo studente partecipa
+        progetti_partecipa = ProgettoSperimentale.objects.filter(id_progetto__in=progetti_iscritti_ids)
+
+        # [cite_start]Recupera tutti i progetti disponibili a cui lo studente NON è iscritto [cite: 16]
+        progetti_disponibili = ProgettoSperimentale.objects.exclude(id_progetto__in=progetti_iscritti_ids)
+
+        context = {
+            'studente': studente,
+            'progetti_partecipa': progetti_partecipa,
+            'progetti_disponibili': progetti_disponibili,
+        }
+        return render(request, 'studente/dashboard_studente.html', context)
+
+    except Utente.DoesNotExist:
+        return redirect('logout')
 
 
-@login_required
+
+# VISTA DASHBOARD TECNICO (RF3, RF12)
 def dashboard_tecnico(request):
-    return render(request, 'tecnico/dashboard_tecnico.html')
+
+    # --- Controllo di autorizzazione ---
+    if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Tecnico':
+        return redirect('login')
+
+    try:
+        matricola_tecnico = request.session.get('matricola')
+        tecnico = Utente.objects.get(matricola=matricola_tecnico)
+
+        # Prova a trovare il laboratorio di cui il tecnico è responsabile
+        laboratorio_responsabile = Laboratorio.objects.filter(responsabile=tecnico).first()
+
+        attrezzature_da_gestire = []
+        if laboratorio_responsabile:
+            # [cite_start]Se è responsabile, recupera tutte le attrezzature di quel laboratorio [cite: 20]
+            attrezzature_da_gestire = Attrezzatura.objects.filter(laboratorio=laboratorio_responsabile)
+
+        context = {
+            'tecnico': tecnico,
+            'laboratorio': laboratorio_responsabile,
+            'attrezzature': attrezzature_da_gestire,
+        }
+        return render(request, 'dashboard_tecnico.html', context)
+
+    except Utente.DoesNotExist:
+        return redirect('logout')
