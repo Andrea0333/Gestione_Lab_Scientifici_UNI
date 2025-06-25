@@ -310,7 +310,7 @@ def crea_esperimento_view(request, progetto_id):
             for attrezzatura in dati['attrezzature']:
                 PrenotazioneAttrezzatura.objects.create(
                     docente=professore,
-                    codice_inventario=attrezzatura,
+                    attrezzatura=attrezzatura,
                     esperimento=nuovo_esperimento,
                     data=dati['data_prenotazione'],
                     ora_inizio=dati['ora_inizio'],
@@ -354,3 +354,50 @@ def elimina_progetto_view(request, progetto_id):
 
 
 #FINZIONALITA' TECNICO
+
+
+
+
+def aggiungi_attrezzatura_view(request):
+    if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Tecnico':
+        return redirect('login')
+
+    tecnico = Utente.objects.get(matricola=request.session.get('matricola'))
+    laboratorio = Laboratorio.objects.filter(responsabile=tecnico).first()
+
+    if not laboratorio:  #solo i tecnici responsabili di un lab possono aggiungere attrezzature
+        return redirect('dashboard_tecnico')
+
+    if request.method == 'POST':
+        form = AttrezzaturaForm(request.POST)
+        if form.is_valid():
+            attrezzatura = form.save(commit=False)
+            attrezzatura.laboratorio = laboratorio
+            attrezzatura.save()
+            return redirect('dashboard_tecnico')
+    else:
+        form = AttrezzaturaForm()
+
+    return render(request, 'form_generico.html', {'form': form, 'titolo': 'Aggiungi Nuova Attrezzatura'})
+
+
+def modifica_stato_attrezzatura_view(request, attrezzatura_id):
+    if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Tecnico':
+        return redirect('login')
+
+    attrezzatura = get_object_or_404(Attrezzatura, codice_inventario=attrezzatura_id)
+    tecnico = Utente.objects.get(matricola=request.session.get('matricola'))
+
+    # controlliammo  che l'attrezzatura appartenga al laboratorio del tecnico, come abbiamo fatto per i professori
+    if attrezzatura.laboratorio.responsabile != tecnico:
+        return redirect('dashboard_tecnico')
+
+    if request.method == 'POST':
+        form = ModificaStatoAttrezzaturaForm(request.POST, instance=attrezzatura)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard_tecnico')
+    else:
+        form = ModificaStatoAttrezzaturaForm(instance=attrezzatura)
+
+    return render(request, 'form_generico.html', {'form': form, 'titolo': f"Modifica Stato di: {attrezzatura.tipo} ({attrezzatura.marca})"})

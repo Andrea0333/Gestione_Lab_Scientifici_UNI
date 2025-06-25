@@ -183,7 +183,7 @@ class CreaEsperimentoForm(forms.Form):
             attrezzature_selezionate = cleaned_data.get('attrezzature', [])
             for attr in attrezzature_selezionate:
                 prenotazioni_attr_conflitto = PrenotazioneAttrezzatura.objects.filter(
-                    codice_inventario=attr,
+                    attrezzatura=attr,
                     data=data,
                     ora_fine__gt=inizio,
                     ora_inizio__lt=fine
@@ -192,3 +192,17 @@ class CreaEsperimentoForm(forms.Form):
                     self.add_error('attrezzature', f"L'attrezzatura '{attr}' è già prenotata in questa fascia oraria.")
 
         return cleaned_data
+
+
+
+# forms.py
+class AttrezzaturaForm(forms.ModelForm):
+    class Meta:
+        model = Attrezzatura
+
+        fields = ['tipo', 'marca', 'stato']
+
+class ModificaStatoAttrezzaturaForm(forms.ModelForm):
+    class Meta:
+        model = Attrezzatura
+        fields = ['stato']
