@@ -43,5 +43,9 @@ urlpatterns = [
 
 
     path('dashboard/studente/', views.dashboard_studente, name='dashboard_studente'),
+
     path('dashboard/tecnico/', views.dashboard_tecnico, name='dashboard_tecnico'),
+    path('attrezzatura/nuova/', views.aggiungi_attrezzatura_view, name='aggiungi_attrezzatura'),
+    path('attrezzatura/<int:attrezzatura_id>/modifica/', views.modifica_stato_attrezzatura_view, name='modifica_stato_attrezzatura'),
+
 ]

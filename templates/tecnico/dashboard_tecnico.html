@@ -1,8 +1,96 @@
-
-
 {% extends 'base.html' %}
 {% block content %}
-<div class="alert alert-info" role="alert">
-  Benvenuto nella Dashboard Tecnico
+<div class="container mt-4">
+
+
+  <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <div>
+      <h3>Dashboard Tecnico</h3>
+      <p class="text-muted mb-0">Benvenuto, {{ tecnico.nome }} {{ tecnico.cognome }}!</p>
+    </div>
+    <a href="{% url 'logout' %}" class="btn btn-danger">
+      <i class="bi bi-box-arrow-right me-2"></i>Logout
+    </a>
+  </div>
+
+  {# Se il tecnico non è associato a nessun laboratorio, mostra un messaggio #}
+  {% if not laboratorio %}
+  <div class="alert alert-warning" role="alert">
+    Attualmente non sei assegnato come responsabile di nessun laboratorio. Contatta un amministratore.
+  </div>
+  {% else %}
+
+  {# PANNELLO GESTIONE ATTREZZATURE (RF12) #}
+  <div class="card shadow-sm mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Gestione Attrezzature - Laboratorio: {{ laboratorio.nome }}</h5>
+      <a href="{% url 'aggiungi_attrezzatura' %}" class="btn btn-primary">
+          <i class="bi bi-plus-circle-fill me-2"></i>Aggiungi Attrezzatura
+      </a>
+        <a href="{% url 'modifica_stato_attrezzatura' attr.codice_inventario %}" class="btn btn-outline-secondary btn-sm">Modifica Stato</a>
+{# ... #}
+    </div>
+    <div class="card-body">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Tipo</th>
+            <th>Marca</th>
+            <th>Stato Attuale</th>
+            <th>Azione</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for attr in attrezzature %}
+          <tr>
+            <td>{{ attr.tipo }}</td>
+            <td>{{ attr.marca }}</td>
+            <td>
+              {% if attr.stato == 'Funzionante' %}
+                <span class="badge bg-success">{{ attr.stato }}</span>
+              {% elif attr.stato == 'In manutenzione' %}
+                <span class="badge bg-warning text-dark">{{ attr.stato }}</span>
+              {% else %}
+                <span class="badge bg-danger">{{ attr.stato }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="#" class="btn btn-outline-secondary btn-sm">Modifica Stato</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="text-center">Nessuna attrezzatura presente in questo laboratorio.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {# PANNELLO PRENOTAZIONI DA GESTIRE (RF3) #}
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <h5 class="mb-0">Prenotazioni Laboratorio Imminenti</h5>
+    </div>
+    <div class="card-body">
+      {% if prenotazioni %}
+        <ul class="list-group list-group-flush">
+        {% for p in prenotazioni %}
+          <li class="list-group-item">
+            <strong>Data:</strong> {{ p.data|date:"d/m/Y" }} |
+            <strong>Orario:</strong> {{ p.ora_inizio|time:"H:i" }} - {{ p.ora_fine|time:"H:i" }} |
+            <strong>Professore:</strong> {{ p.docente.nome }} {{ p.docente.cognome }} |
+            <strong>Esperimento:</strong> {{ p.esperimento.titolo }}
+          </li>
+        {% endfor %}
+        </ul>
+      {% else %}
+        <p class="mb-0">Nessuna prenotazione imminente per il tuo laboratorio.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% endif %}
 </div>
-{% endblock %}
+{% endblock %}%}

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
+from django.utils import  timezone
 
 from .forms import *
 from .models import *
@@ -178,8 +179,6 @@ def dashboard_studente(request):
 
 # VISTA DASHBOARD TECNICO (RF3, RF12)
 def dashboard_tecnico(request):
-
-    # --- Controllo di autorizzazione ---
     if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Tecnico':
         return redirect('login')
 
@@ -187,23 +186,35 @@ def dashboard_tecnico(request):
         matricola_tecnico = request.session.get('matricola')
         tecnico = Utente.objects.get(matricola=matricola_tecnico)
 
-        # Prova a trovare il laboratorio di cui il tecnico è responsabile
         laboratorio_responsabile = Laboratorio.objects.filter(responsabile=tecnico).first()
 
         attrezzature_da_gestire = []
+        prenotazioni_imminenti = []
+
         if laboratorio_responsabile:
-            # [cite_start]Se è responsabile, recupera tutte le attrezzature di quel laboratorio [cite: 20]
-            attrezzature_da_gestire = Attrezzatura.objects.filter(laboratorio=laboratorio_responsabile)
+
+            attrezzature_da_gestire = Attrezzatura.objects.filter(laboratorio=laboratorio_responsabile).order_by('tipo')
+
+            #recuperiamo le prenotazioni per il laboratorio di oggi e dei giorni futuri
+            oggi = timezone.now().date()
+            prenotazioni_imminenti = PrenotazioneLaboratorio.objects.filter(
+                laboratorio=laboratorio_responsabile,
+                data__gte=oggi
+            ).order_by('data', 'ora_inizio')
 
         context = {
             'tecnico': tecnico,
             'laboratorio': laboratorio_responsabile,
             'attrezzature': attrezzature_da_gestire,
+            'prenotazioni': prenotazioni_imminenti,
         }
-        return render(request, 'dashboard_tecnico.html', context)
+        return render(request, 'tecnico/dashboard_tecnico.html', context)
 
     except Utente.DoesNotExist:
         return redirect('logout')
+
+
+
 
 
 
@@ -325,7 +336,7 @@ def elimina_progetto_view(request, progetto_id):
 
     progetto = get_object_or_404(ProgettoSperimentale, id_progetto=progetto_id)
 
-    #il professore può eliminare solo i propri progetti
+    #il professore può eliminare solo i propri progetti importante per evitare manipolazioni url
     if progetto.docente.matricola != request.session.get('matricola'):
         return redirect('dashboard_professore')
 
@@ -339,3 +350,7 @@ def elimina_progetto_view(request, progetto_id):
         'progetto': progetto
     }
     return render(request, 'professore/conferma_eliminazione.html', context)
+
+
+
+#FINZIONALITA' TECNICO
