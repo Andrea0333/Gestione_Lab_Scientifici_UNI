@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.decorators import login_required
+from django.db import connection
 from django.utils import  timezone
 
 from .forms import *
@@ -79,15 +78,15 @@ def login_view(request):
 
     if request.method == "POST":
         matricola = request.POST.get('matricola')
-        password_in_chiaro = request.POST.get('password')
+        password = request.POST.get('password')
 
-        if not matricola or not password_in_chiaro:
+        if not matricola or not password:
             return render(request, 'login.html', {'error_message': "Matricola e password sono obbligatorie."})
 
         try:
             utente = Utente.objects.get(matricola=matricola)
 
-            if check_password(password_in_chiaro, utente.password):
+            if check_password(password, utente.password):
                 # Credenziali valide, salviamo i dati in sessione
                 request.session['matricola'] = utente.matricola
                 request.session['ruolo'] = utente.ruolo
@@ -346,6 +345,7 @@ def elimina_progetto_view(request, progetto_id):
 
     #il professore può eliminare solo i propri progetti importante per evitare manipolazioni url
     if progetto.docente.matricola != request.session.get('matricola'):
+        messages.error(request, "Non sei autorizzato a eseguire questa operazione.")
         return redirect('dashboard_professore')
 
 
@@ -510,7 +510,6 @@ def elimina_progetto_view_vulnerabile(request, progetto_id):
     #     messages.error(request, "Non sei autorizzato a eseguire questa operazione.")
     #     return redirect('dashboard_professore')
 
-
     if request.method == 'POST':
         progetto.delete()
         messages.success(request, f"Il progetto '{progetto.titolo}' è stato eliminato tramite manipolazione URL.")
@@ -518,3 +517,32 @@ def elimina_progetto_view_vulnerabile(request, progetto_id):
 
     # SENZA IL CONTROLLO, LA VISTA PROCEDE E MOSTRA LA PAGINA DI CONFERMA
     return render(request, 'professore/conferma_eliminazione.html', {'progetto': progetto})
+
+
+
+#CODICE CHE PERMETTE SQL INJECTION
+
+def login_vulnerabile_view(request):
+    if request.method == 'POST':
+        matricola = request.POST.get('matricola')
+        password = request.POST.get('password')
+
+        # QUERY SQL VULNERABILE
+        # L'input dell'utente viene inserito direttamente nella stringa della query.
+        query = f"SELECT * FROM gestionelaboratoriuniversitari_utente WHERE matricola = '{matricola}' AND password = '{password}'"
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            utente = cursor.fetchone()
+
+            if utente:
+
+                request.session['matricola'] = utente[0]
+                request.session['ruolo'] = utente[5]
+                request.session['is_authenticated'] = True
+                return redirect('dashboard_professore')
+            else:
+                messages.error(request, "Credenziali non valide.")
+                return redirect('login_vulnerabile')
+
+    return render(request, 'login_vulnerabile.html')

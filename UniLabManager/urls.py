@@ -60,4 +60,6 @@ urlpatterns = [
     path('attrezzatura/nuova/', views.aggiungi_attrezzatura_view, name='aggiungi_attrezzatura'),
     path('attrezzatura/<int:attrezzatura_id>/modifica/', views.modifica_stato_attrezzatura_view, name='modifica_stato_attrezzatura'),
 
+    path('login-vulnerabile/', views.login_vulnerabile_view, name='login_vulnerabile'),
+
 ]

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Vulnerabile (Dimostrazione)</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        .container { max-width: 400px; margin: auto; padding: 2em; border: 1px solid #ccc; border-radius: 8px; }
+        input { width: 100%; padding: 8px; margin-bottom: 1em; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        h2 { text-align: center; color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Accesso Vulnerabile (Solo Dimostrazione)</h2>
+        <p style="text-align: center; color: grey;">Questa pagina è intenzionalmente vulnerabile a SQL Injection.</p>
+
+        <form action="{% url 'login_vulnerabile' %}" method="post">
+
+
+            <div>
+                <label for="matricola">Matricola:</label>
+                <input type="text" id="matricola" name="matricola" required>
+            </div>
+
+            <div>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password">
+            </div>
+
+            <button type="submit">Accedi</button>
+        </form>
+
+        {% if messages %}
+            <ul style="color: red; list-style-type: none; padding-left: 0; text-align: center; margin-top: 1em;">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+</body>
+</html>
