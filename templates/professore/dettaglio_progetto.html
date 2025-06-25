@@ -1,13 +1,24 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mt-4">
-    <a href="{% url 'dashboard_professore' %}" class="btn btn-outline-secondary btn-sm mb-3">
-        <i class="bi bi-arrow-left"></i> Torna alla Dashboard
-    </a>
 
-    <div class="card">
+
+    {#  la destinazione cambia in base al ruolo del ruolo dell'utente #}
+    {% if request.session.ruolo == 'Professore' %}
+        <a href="{% url 'dashboard_professore' %}" class="btn btn-outline-secondary btn-sm mb-3">
+            <i class="bi bi-arrow-left"></i> Torna alla Dashboard Professore
+        </a>
+    {% elif request.session.ruolo == 'Studente' %}
+        <a href="{% url 'dashboard_studente' %}" class="btn btn-outline-secondary btn-sm mb-3">
+            <i class="bi bi-arrow-left"></i> Torna alla Dashboard Studente
+        </a>
+    {% endif %}
+
+
+    <div class="card mb-4 shadow-sm">
         <div class="card-header">
             <h4>Progetto: {{ progetto.titolo }}</h4>
+            <h6 class="card-subtitle mb-2 text-muted">Docente: {{ progetto.docente.nome }} {{ progetto.docente.cognome }}</h6>
         </div>
         <div class="card-body">
             <p><strong>Descrizione:</strong> {{ progetto.descrizione }}</p>
@@ -15,21 +26,80 @@
         </div>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center my-4">
-        <h5>Esperimenti Associati</h5>
+
+
+    {# Azioni per il professore: aggiungere un nuovo esperimento #}
+    {% if request.session.ruolo == 'Professore' and progetto.docente.matricola == request.session.matricola %}
+    <div class="d-flex justify-content-end align-items-center my-4">
         <a href="{% url 'crea_esperimento' progetto.id_progetto %}" class="btn btn-success">
             <i class="bi bi-plus-circle-fill me-2"></i>Aggiungi Esperimento
         </a>
     </div>
-
-    {% if esperimenti %}
-        <ul class="list-group">
-        {% for esperimento in esperimenti %}
-            <li class="list-group-item">{{ esperimento.titolo }}</li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>Non ci sono ancora esperimenti per questo progetto.</p>
     {% endif %}
+
+    {# Azione per lo student: partecipare al progetto #}
+    {% if is_studente %}
+        {% if not studente_is_iscritto %}
+            <form action="{% url 'partecipa_progetto' progetto.id_progetto %}" method="post" class="mb-4">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-lg btn-success w-100">
+                    <i class="bi bi-check-circle-fill me-2"></i> Partecipa al Progetto
+                </button>
+            </form>
+        {% else %}
+            <div class="alert alert-success">
+                <i class="bi bi-info-circle-fill me-2"></i>Sei già iscritto a questo progetto. Ora puoi partecipare ai singoli esperimenti.
+            </div>
+        {% endif %}
+    {% endif %}
+
+
+
+    <h5 class="mt-5">Esperimenti Associati</h5>
+    <hr>
+
+    {% for esperimento in esperimenti %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 class="card-title">{{ esperimento.titolo }}</h5>
+                    <p class="card-text">{{ esperimento.descrizione }}</p>
+                </div>
+                <div>
+                    {# per il professore: eliminare l'esperimento #}
+                    {% if request.session.ruolo == 'Professore' and progetto.docente.matricola == request.session.matricola %}
+                    <a href="{% url 'elimina_esperimento' esperimento.id_esperimento %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash3"></i> Elimina
+                    </a>
+                    {% endif %}
+
+                    {#  per lo studente: Partecipare all'esperimento (solo se iscritto al progetto) #}
+                    {% if is_studente and studente_is_iscritto %}
+                         <form action="{% url 'partecipa_esperimento' esperimento.id_esperimento %}" method="post">
+                         {% csrf_token %}
+                         <button type="submit" class="btn btn-sm btn-info">Partecipa</button>
+                     </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% with prenotazione=esperimento.prenotazionelaboratorio_set.first %}
+                {% if prenotazione %}
+                <p class="card-text text-muted mt-2 border-top pt-2">
+                    <small>
+                        <strong>Data:</strong> {{ prenotazione.data|date:"d/m/Y" }} |
+                        <strong>Orario:</strong> {{ prenotazione.ora_inizio|time:"H:i" }} - {{ prenotazione.ora_fine|time:"H:i" }} |
+                        <strong>Laboratorio:</strong> {{ prenotazione.laboratorio.nome }}
+                    </small>
+                </p>
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-secondary">Non ci sono ancora esperimenti per questo progetto.</div>
+    {% endfor %}
+
 </div>
 {% endblock %}

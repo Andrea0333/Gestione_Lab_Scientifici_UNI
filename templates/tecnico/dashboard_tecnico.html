@@ -18,14 +18,13 @@
   </div>
   {% else %}
 
+
   <div class="card shadow-sm mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
       <h5 class="mb-0">Gestione Attrezzature - Laboratorio: {{ laboratorio.nome }}</h5>
-      {# Il pulsante per Aggiungere va qui, quello per modificare va nella tabella #}
       <a href="{% url 'aggiungi_attrezzatura' %}" class="btn btn-primary">
           <i class="bi bi-plus-circle-fill me-2"></i>Aggiungi Attrezzatura
       </a>
-      {# --- ABBIAMO RIMOSSO IL LINK ERRATO DA QUI --- #}
     </div>
     <div class="card-body">
       <table class="table table-hover">
@@ -52,7 +51,6 @@
               {% endif %}
             </td>
             <td>
-              {# --- ABBIAMO CORRETTO IL LINK QUI --- #}
               <a href="{% url 'modifica_stato_attrezzatura' attr.codice_inventario %}" class="btn btn-outline-secondary btn-sm">Modifica Stato</a>
             </td>
           </tr>
@@ -66,10 +64,30 @@
     </div>
   </div>
 
-  {# Il resto del file rimane invariato... #}
+
   <div class="card shadow-sm">
-    {# ... #}
+    <div class="card-header">
+      <h5 class="mb-0">Prenotazioni Laboratorio Imminenti</h5>
+    </div>
+    <div class="card-body">
+      {% if prenotazioni %}
+        <ul class="list-group list-group-flush">
+
+        {% for p in prenotazioni %}
+          <li class="list-group-item">
+            <strong>Data:</strong> {{ p.data|date:"d/m/Y" }} |
+            <strong>Orario:</strong> {{ p.ora_inizio|time:"H:i" }} - {{ p.ora_fine|time:"H:i" }} |
+            <strong>Professore:</strong> {{ p.docente.nome }} {{ p.docente.cognome }} |
+            <strong>Esperimento:</strong> {{ p.esperimento.titolo }}
+          </li>
+        {% endfor %}
+        </ul>
+      {% else %}
+        <p class="mb-0">Nessuna prenotazione imminente per il tuo laboratorio.</p>
+      {% endif %}
+    </div>
   </div>
+
 
   {% endif %}
 </div>

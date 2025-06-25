@@ -29,7 +29,6 @@
       {# Controlla se esistono progetti creati da questo professore #}
       {% if progetti %}
         <ul class="list-group list-group-flush">
-          {# Itera su ogni progetto passato dalla vista 'dashboard_professore' #}
           {% for progetto in progetti %}
             <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2">
 
@@ -41,7 +40,7 @@
                 </small>
               </div>
 
-              {# Pulsanti di azione per ogni singolo progetto #}
+              {# Pulsanti di azione per  progetto #}
               <div class="d-flex gap-2">
 
                 <a href="{% url 'dettaglio_progetto' progetto.id_progetto %}" class="btn btn-outline-info btn-sm">

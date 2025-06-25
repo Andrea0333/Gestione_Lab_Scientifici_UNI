@@ -39,12 +39,21 @@ urlpatterns = [
 
     path('progetto/<int:progetto_id>/esperimento/nuovo/', views.crea_esperimento_view, name='crea_esperimento'),
 
+    path('esperimento/<int:esperimento_id>/elimina/', views.elimina_esperimento_view, name='elimina_esperimento'),
+
+
     path('progetto/<int:progetto_id>/elimina/', views.elimina_progetto_view, name='elimina_progetto'),
 
 
     path('dashboard/studente/', views.dashboard_studente, name='dashboard_studente'),
 
     path('dashboard/tecnico/', views.dashboard_tecnico, name='dashboard_tecnico'),
+
+    path('progetto/<int:progetto_id>/partecipa/', views.partecipa_progetto_view, name='partecipa_progetto'),
+
+    path('esperimento/<int:esperimento_id>/partecipa/', views.partecipa_esperimento_view, name='partecipa_esperimento'),
+
+
     path('attrezzatura/nuova/', views.aggiungi_attrezzatura_view, name='aggiungi_attrezzatura'),
     path('attrezzatura/<int:attrezzatura_id>/modifica/', views.modifica_stato_attrezzatura_view, name='modifica_stato_attrezzatura'),
 

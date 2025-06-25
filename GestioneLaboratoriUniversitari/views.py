@@ -9,18 +9,17 @@ from .models import *
 from django.contrib.auth.hashers import check_password
 
 
-# views.py
 
-# Aggiungi questa vista al tuo views.py
+
 
 def home_view(request):
 
 
-    # Controlla se l'utente ha una sessione attiva
+
     if request.session.get('is_authenticated'):
         ruolo = request.session.get('ruolo')
 
-        # Reindirizza alla dashboard corretta in base al ruolo
+        # indirizziamo  alla dashboard corretta in base al ruolo
         if ruolo == 'Professore':
             return redirect('dashboard_professore')
         elif ruolo == 'Studente':
@@ -28,52 +27,54 @@ def home_view(request):
         elif ruolo == 'Tecnico':
             return redirect('dashboard_tecnico')
         else:
-            # Fallback nel caso in cui la sessione sia anomala
+
             return redirect('login')
 
-    # Se l'utente non è autenticato, mostra la home page pubblica
+
     return render(request, 'home.html')
 
-# Vista per la pagina di scelta
+
 def registrazione_view(request):
     return render(request, 'registrazione.html')
 
-# Vista per la registrazione del professore
+# registrazione  professore
 def registrazione_professore_view(request):
     if request.method == 'POST':
         form = ProfessoreForm(request.POST)
         if form.is_valid():
             form.save()
-            # Puoi aggiungere un messaggio di successo qui
+            messages.success(request, 'Registrazione completata!')
             return redirect('login') # Reindirizza al login dopo il successo
     else:
         form = ProfessoreForm()
     return render(request, 'professore/registrazione_professore.html', {'form': form})
 
-# Vista per la registrazione dello studente
+# registrazione studente
 def registrazione_studente_view(request):
     if request.method == 'POST':
         form = StudenteForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Registrazione completata!')
             return redirect('login')
     else:
         form = StudenteForm()
     return render(request, 'studente/registrazione_studente.html', {'form': form})
 
-# Vista per la registrazione del tecnico
+#registrazione tecnico
 def registrazione_tecnico_view(request):
     if request.method == 'POST':
         form = TecnicoForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Registrazione completata!')
             return redirect('login')
     else:
         form = TecnicoForm()
     return render(request, 'tecnico/registrazione_tecnico.html', {'form': form})
 
 
-# VISTA DI LOGIN
+#  LOGIN
 def login_view(request):
 
     if request.method == "POST":
@@ -92,7 +93,7 @@ def login_view(request):
                 request.session['ruolo'] = utente.ruolo
                 request.session['is_authenticated'] = True
 
-                #  REDIRECT BASATO SUL RUOLO
+                # indirizzamento basato sul ruolo dell'utente
                 if utente.ruolo == 'Professore':
                     return redirect('dashboard_professore')
                 elif utente.ruolo == 'Studente':
@@ -108,16 +109,14 @@ def login_view(request):
     return render(request, 'login.html')
 
 
-# VISTA DI LOGOUT (RF11)
+# LOGOUT (RF11)
 def logout_view(request):
-
-    # request.session.flush() rimuove tutti i dati dalla sessione corrente.
     request.session.flush()
     return redirect('login')
 
 
-#
-# VISTA DASHBOARD PROFESSORE (RF3, RF4)
+
+# DASHBOARD PROFESSORE (RF3, RF4)
 def dashboard_professore(request):
 
     #controllo
@@ -125,11 +124,10 @@ def dashboard_professore(request):
         return redirect('login')
 
     try:
-        #Recupera l'utente dalla matricola salvata in sessione
+        #recuperiami l'utente dalla matricola
         matricola_professore = request.session.get('matricola')
         professore = Utente.objects.get(matricola=matricola_professore)
 
-        # [cite_start]Recupera tutti i progetti sperimentali creati da questo professore [cite: 9]
         progetti_creati = ProgettoSperimentale.objects.filter(docente=professore).order_by('-data_inizio')
 
         context = {
@@ -139,15 +137,15 @@ def dashboard_professore(request):
         return render(request, 'professore/dashboard_professore.html', context)
 
     except Utente.DoesNotExist:
-        # Se per qualche motivo l'utente non esiste più, effettua il logout
+
         return redirect('logout')
 
 
 
-# VISTA DASHBOARD STUDENTE (RF3, RF9)
+#  DASHBOARD STUDENTE (RF3, RF9)
 def dashboard_studente(request):
 
-    #Controllo di autorizzazione
+    #  controllo di autorizzazione
     if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Studente':
         return redirect('login')
 
@@ -155,14 +153,12 @@ def dashboard_studente(request):
         matricola_studente = request.session.get('matricola')
         studente = Utente.objects.get(matricola=matricola_studente)
 
-        # Recupera gli ID dei progetti a cui lo studente è già iscritto
-        progetti_iscritti_ids = PartecipazioneProgetto.objects.filter(studente=studente).values_list('progetto_id',
-                                                                                                     flat=True)
+        #recupero degli id dei progetti a cui lo studente è  iscritto
+        progetti_iscritti_ids = PartecipazioneProgetto.objects.filter(studente=studente).values_list('progetto_id',  flat=True)
 
-        # Recupera gli oggetti ProgettoSperimentale a cui lo studente partecipa
+        # recupero gli oggetti ProgettoSperimentale a cui lo studente partecipa
         progetti_partecipa = ProgettoSperimentale.objects.filter(id_progetto__in=progetti_iscritti_ids)
-
-        # [cite_start]Recupera tutti i progetti disponibili a cui lo studente NON è iscritto [cite: 16]
+        #mostriamo i progetti disponibili
         progetti_disponibili = ProgettoSperimentale.objects.exclude(id_progetto__in=progetti_iscritti_ids)
 
         context = {
@@ -177,7 +173,7 @@ def dashboard_studente(request):
 
 
 
-# VISTA DASHBOARD TECNICO (RF3, RF12)
+# DASHBOARD TECNICO (RF3, RF12)
 def dashboard_tecnico(request):
     if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Tecnico':
         return redirect('login')
@@ -195,7 +191,7 @@ def dashboard_tecnico(request):
 
             attrezzature_da_gestire = Attrezzatura.objects.filter(laboratorio=laboratorio_responsabile).order_by('tipo')
 
-            #recuperiamo le prenotazioni per il laboratorio di oggi e dei giorni futuri
+            #recuperiamo le prenotazioni per il laboratorio  giorni futuri
             oggi = timezone.now().date()
             prenotazioni_imminenti = PrenotazioneLaboratorio.objects.filter(
                 laboratorio=laboratorio_responsabile,
@@ -214,10 +210,6 @@ def dashboard_tecnico(request):
         return redirect('logout')
 
 
-
-
-
-
 # FUNZIONALITA' PROFESSORE
 def crea_progetto_view(request):
 
@@ -228,18 +220,15 @@ def crea_progetto_view(request):
     if request.method == 'POST':
         form = ProgettoSperimentaleForm(request.POST)
         if form.is_valid():
-            #creiamo il progetto ma non lo salviamo ancora nel DB
+            #creiamo il progetto ma non lo salviamo ancora nel database
             progetto = form.save(commit=False)
 
             #associamo la matricola del professore al progetto
             matricola_professore = request.session.get('matricola')
             professore = Utente.objects.get(matricola=matricola_professore)
             progetto.docente = professore
-
-
             progetto.save()
 
-            #reindirizziamo alla dashboard del professore
             return redirect('dashboard_professore')
     else:
         form = ProgettoSperimentaleForm()
@@ -251,24 +240,44 @@ def crea_progetto_view(request):
 
 
 def dettaglio_progetto_view(request, progetto_id):
+    # controlliamo  se l'utente è semplicemente autenticato.
 
-    if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Professore':
+    if not request.session.get('is_authenticated'):
         return redirect('login')
 
+
     progetto = get_object_or_404(ProgettoSperimentale, id_progetto=progetto_id)
+    esperimenti = Esperimento.objects.filter(progetto=progetto).prefetch_related('prenotazionelaboratorio_set')
 
-    # assicuriamoci che il professore che richiede la pagina sia il proprietario del progetto
-    if progetto.docente.matricola != request.session.get('matricola'):
-        # Se non è il proprietario, reindirizzalo alla sua dashboard
-        return redirect('dashboard_professore')
+    #  verifichiamo il ruolo
+    ruolo_utente = request.session.get('ruolo')
 
-    esperimenti = Esperimento.objects.filter(progetto=progetto)
+    #  è un professore  controlliamo che sia il proprietario del progetto
+    if ruolo_utente == 'Professore':
+        if progetto.docente.matricola != request.session.get('matricola'):
+            # Se non è il proprietario, non può vedere la pagina
+            return redirect('dashboard_professore')
+
+
+   #srudente
+    is_studente = (ruolo_utente == 'Studente')
+    studente_is_iscritto = False
+    if is_studente:
+        try:
+            studente = Utente.objects.get(matricola=request.session.get('matricola'))
+            studente_is_iscritto = PartecipazioneProgetto.objects.filter(progetto=progetto, studente=studente).exists()
+        except Utente.DoesNotExist:
+            return redirect('logout')
 
     context = {
         'progetto': progetto,
-        'esperimenti': esperimenti
+        'esperimenti': esperimenti,
+        'is_studente': is_studente,
+        'studente_is_iscritto': studente_is_iscritto,
     }
+
     return render(request, 'professore/dettaglio_progetto.html', context)
+
 
 
 def crea_esperimento_view(request, progetto_id):
@@ -306,7 +315,7 @@ def crea_esperimento_view(request, progetto_id):
                 ora_fine=dati['ora_fine']
             )
 
-            #3  prenotazioni per le attrezzature
+            #3  prenotazioni delle attrezzature
             for attrezzatura in dati['attrezzature']:
                 PrenotazioneAttrezzatura.objects.create(
                     docente=professore,
@@ -324,8 +333,7 @@ def crea_esperimento_view(request, progetto_id):
     return render(request, 'professore/crea_esperimento.html', {'form': form, 'progetto': progetto})
 
 
-# views.py
-from django.shortcuts import get_object_or_404  # Assicurati che sia importato
+
 
 
 def elimina_progetto_view(request, progetto_id):
@@ -353,10 +361,30 @@ def elimina_progetto_view(request, progetto_id):
 
 
 
+
+def elimina_esperimento_view(request, esperimento_id):
+    if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Professore':
+        return redirect('login')
+
+    esperimento = get_object_or_404(Esperimento, id_esperimento=esperimento_id)
+    progetto = esperimento.progetto  # Recuperiamo il progetto per il redirect e i controlli
+
+    #controlliamo che il professore sia il proprietario del progetto
+    if progetto.docente.matricola != request.session.get('matricola'):
+        return redirect('dashboard_professore')
+
+    if request.method == 'POST':
+        esperimento.delete()
+        return redirect('dettaglio_progetto', progetto_id=progetto.id_progetto)
+
+    return render(request, 'professore/conferma_eliminazione_esperimento.html', {'esperimento': esperimento})
+
+
+
+
+
+
 #FINZIONALITA' TECNICO
-
-
-
 
 def aggiungi_attrezzatura_view(request):
     if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Tecnico':
@@ -401,3 +429,72 @@ def modifica_stato_attrezzatura_view(request, attrezzatura_id):
         form = ModificaStatoAttrezzaturaForm(instance=attrezzatura)
 
     return render(request, 'form_generico.html', {'form': form, 'titolo': f"Modifica Stato di: {attrezzatura.tipo} ({attrezzatura.marca})"})
+
+
+
+
+
+#FUNZIONALITA' STUDENTE
+
+def partecipa_progetto_view(request, progetto_id):
+    #solo studenti autenticati
+    if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Studente':
+        return redirect('login')
+
+    progetto = get_object_or_404(ProgettoSperimentale, id_progetto=progetto_id)
+    studente = get_object_or_404(Utente, matricola=request.session.get('matricola'))
+
+
+    if request.method == 'POST':
+        #controllo  se lo studente è iscritto
+        gia_iscritto = PartecipazioneProgetto.objects.filter(progetto=progetto, studente=studente).exists()
+        if gia_iscritto:
+            messages.warning(request, 'Sei già iscritto a questo progetto.')
+            return redirect('dettaglio_progetto', progetto_id=progetto.id_progetto)
+
+        # Controllo  (RF10) se il progetto ha raggiunto il numero massimo di posti
+        partecipanti_attuali = PartecipazioneProgetto.objects.filter(progetto=progetto).count()
+        if partecipanti_attuali >= progetto.max_posti:
+            messages.error(request, 'Impossibile iscriversi: il progetto ha raggiunto il numero massimo di partecipanti.')
+            return redirect('dettaglio_progetto', progetto_id=progetto.id_progetto)
+
+        #se i controlli sono superati, crea la partecipazione
+        PartecipazioneProgetto.objects.create(progetto=progetto, studente=studente)
+        messages.success(request, f"Iscrizione al progetto '{progetto.titolo}' avvenuta con successo!")
+        return redirect('dashboard_studente')
+
+
+    return redirect('dettaglio_progetto', progetto_id=progetto.id_progetto)
+
+
+
+
+# views.py
+def partecipa_esperimento_view(request, esperimento_id):
+    # Protezione: solo studenti autenticati
+    if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Studente':
+        return redirect('login')
+
+    esperimento = get_object_or_404(Esperimento, id_esperimento=esperimento_id)
+    studente = get_object_or_404(Utente, matricola=request.session.get('matricola'))
+    progetto = esperimento.progetto
+
+    if request.method == 'POST':
+        #verifichiamo che lo studente è iscritto al progetto
+        iscritto_al_progetto = PartecipazioneProgetto.objects.filter(progetto=progetto, studente=studente).exists()
+        if not iscritto_al_progetto:
+            messages.error(request, 'Devi essere iscritto al progetto per poter partecipare ai suoi esperimenti.')
+            return redirect('dettaglio_progetto', progetto_id=progetto.id_progetto)
+
+        # verifichiamo se lo studente è gia iscritto all'esperimento
+        gia_iscritto_esperimento = PartecipazioneEsperimento.objects.filter(esperimento=esperimento, studente=studente).exists()
+        if gia_iscritto_esperimento:
+            messages.warning(request, 'Sei già iscritto a questo esperimento.')
+            return redirect('dettaglio_progetto', progetto_id=progetto.id_progetto)
+
+        # se le verifiche sono ok crea la partecipazione all'esperimento
+        PartecipazioneEsperimento.objects.create(esperimento=esperimento, studente=studente)
+        messages.success(request, f"Iscrizione all'esperimento '{esperimento.titolo}' avvenuta con successo!")
+        return redirect('dettaglio_progetto', progetto_id=progetto.id_progetto)
+
+    return redirect('dettaglio_progetto', progetto_id=progetto.id_progetto)
