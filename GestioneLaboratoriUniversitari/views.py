@@ -21,7 +21,7 @@ def home_view(request):
 
         # Reindirizza alla dashboard corretta in base al ruolo
         if ruolo == 'Professore':
-            return redirect('registrazione_professore')
+            return redirect('dashboard_professore')
         elif ruolo == 'Studente':
             return redirect('dashboard_studente')
         elif ruolo == 'Tecnico':
@@ -35,7 +35,7 @@ def home_view(request):
 
 # Vista per la pagina di scelta
 def registrazione_view(request):
-    return render(request, 'registrazione.html') # Il tuo template 'registrazione.html' va benissimo
+    return render(request, 'registrazione.html')
 
 # Vista per la registrazione del professore
 def registrazione_professore_view(request):
@@ -72,13 +72,7 @@ def registrazione_tecnico_view(request):
     return render(request, 'tecnico/registrazione_tecnico.html', {'form': form})
 
 
-
-
-
-
 # VISTA DI LOGIN
-
-
 def login_view(request):
 
     if request.method == "POST":
@@ -125,12 +119,12 @@ def logout_view(request):
 # VISTA DASHBOARD PROFESSORE (RF3, RF4)
 def dashboard_professore(request):
 
-    # --- Controllo di autorizzazione ---
+    #controllo
     if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Professore':
         return redirect('login')
 
     try:
-        # Recupera l'utente dalla matricola salvata in sessione
+        #Recupera l'utente dalla matricola salvata in sessione
         matricola_professore = request.session.get('matricola')
         professore = Utente.objects.get(matricola=matricola_professore)
 
@@ -152,7 +146,7 @@ def dashboard_professore(request):
 # VISTA DASHBOARD STUDENTE (RF3, RF9)
 def dashboard_studente(request):
 
-    # --- Controllo di autorizzazione ---
+    #Controllo di autorizzazione
     if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Studente':
         return redirect('login')
 
@@ -210,3 +204,36 @@ def dashboard_tecnico(request):
 
     except Utente.DoesNotExist:
         return redirect('logout')
+
+
+
+# FUNZIONALITA' PROFESSORE
+def crea_progetto_view(request):
+
+    #  solo i professori autenticati possono accedere
+    if not request.session.get('is_authenticated') or request.session.get('ruolo') != 'Professore':
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = ProgettoSperimentaleForm(request.POST)
+        if form.is_valid():
+            #Creiamo l'oggetto progetto ma non lo salviamo ancora nel DB
+            progetto = form.save(commit=False)
+
+            #Associamo il professore loggato al progetto
+            matricola_professore = request.session.get('matricola')
+            professore = Utente.objects.get(matricola=matricola_professore)
+            progetto.docente = professore
+
+
+            progetto.save()
+
+            # Reindirizziamo alla dashboard del professore
+            return redirect('dashboard_professore')
+    else:
+        form = ProgettoSperimentaleForm()
+
+    context = {
+        'form': form
+    }
+    return render(request, 'professore/crea_progetto.html', context)

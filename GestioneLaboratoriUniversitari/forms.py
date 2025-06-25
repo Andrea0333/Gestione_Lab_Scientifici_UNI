@@ -1,7 +1,7 @@
 # forms.py
 
 from django import forms
-from .models import Utente, Ruolo
+from .models import *
 from django.contrib.auth.hashers import make_password  # Importiamo solo la funzione per l'hashing
 import re
 
@@ -122,3 +122,18 @@ class TecnicoForm(BaseUserRegistrationForm):
         if commit:
             user.save()
         return user
+
+
+
+class ProgettoSperimentaleForm(forms.ModelForm):
+    class Meta:
+        model = ProgettoSperimentale
+        # Campi che l'utente potrà compilare
+        fields = ['titolo', 'descrizione', 'obiettivi', 'data_inizio', 'data_fine', 'max_posti']
+
+        widgets = {
+            'descrizione': forms.Textarea(attrs={'rows': 4}),
+            'obiettivi': forms.Textarea(attrs={'rows': 4}),
+            'data_inizio': forms.DateInput(attrs={'type': 'date'}),
+            'data_fine': forms.DateInput(attrs={'type': 'date'}),
+        }

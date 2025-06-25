@@ -33,6 +33,8 @@ urlpatterns = [
 
     path('dashboard/professore/', views.dashboard_professore, name='dashboard_professore'),
 
+    path('progetto/nuovo/', views.crea_progetto_view, name='crea_progetto'),
+
     path('dashboard/studente/', views.dashboard_studente, name='dashboard_studente'),
     path('dashboard/tecnico/', views.dashboard_tecnico, name='dashboard_tecnico'),
 ]
