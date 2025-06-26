@@ -12,9 +12,6 @@ from django.contrib.auth.hashers import check_password
 
 
 def home_view(request):
-
-
-
     if request.session.get('is_authenticated'):
         ruolo = request.session.get('ruolo')
 
@@ -36,6 +33,8 @@ def home_view(request):
 def registrazione_view(request):
     return render(request, 'registrazione.html')
 
+
+
 # registrazione  professore
 def registrazione_professore_view(request):
     if request.method == 'POST':
@@ -48,6 +47,8 @@ def registrazione_professore_view(request):
         form = ProfessoreForm()
     return render(request, 'professore/registrazione_professore.html', {'form': form})
 
+
+
 # registrazione studente
 def registrazione_studente_view(request):
     if request.method == 'POST':
@@ -59,6 +60,8 @@ def registrazione_studente_view(request):
     else:
         form = StudenteForm()
     return render(request, 'studente/registrazione_studente.html', {'form': form})
+
+
 
 #registrazione tecnico
 def registrazione_tecnico_view(request):
@@ -87,7 +90,7 @@ def login_view(request):
             utente = Utente.objects.get(matricola=matricola)
 
             if check_password(password, utente.password):
-                # Credenziali valide, salviamo i dati in sessione
+                #salviamo i dati in sessione
                 request.session['matricola'] = utente.matricola
                 request.session['ruolo'] = utente.ruolo
                 request.session['is_authenticated'] = True
@@ -184,7 +187,8 @@ def dashboard_tecnico(request):
         laboratorio_responsabile = Laboratorio.objects.filter(responsabile=tecnico).first()
 
         attrezzature_da_gestire = []
-        prenotazioni_imminenti = []
+        prenotazioni_imminenti_lab = []
+        prenotazione_imminenti_attrezzature = []
 
         if laboratorio_responsabile:
 
@@ -192,8 +196,14 @@ def dashboard_tecnico(request):
 
             #recuperiamo le prenotazioni per il laboratorio  giorni futuri
             oggi = timezone.now().date()
-            prenotazioni_imminenti = PrenotazioneLaboratorio.objects.filter(
+            prenotazioni_imminenti_lab = PrenotazioneLaboratorio.objects.filter(
                 laboratorio=laboratorio_responsabile,
+                data__gte=oggi
+            ).order_by('data', 'ora_inizio')
+
+            oggi = timezone.now().date()
+            prenotazione_imminenti_attrezzature = PrenotazioneAttrezzatura.objects.filter(
+                attrezzatura__laboratorio=laboratorio_responsabile,
                 data__gte=oggi
             ).order_by('data', 'ora_inizio')
 
@@ -201,7 +211,9 @@ def dashboard_tecnico(request):
             'tecnico': tecnico,
             'laboratorio': laboratorio_responsabile,
             'attrezzature': attrezzature_da_gestire,
-            'prenotazioni': prenotazioni_imminenti,
+            'prenotazioni_laboratorio': prenotazioni_imminenti_lab,
+            'prenotazioni_attrezzature': prenotazione_imminenti_attrezzature,
+
         }
         return render(request, 'tecnico/dashboard_tecnico.html', context)
 

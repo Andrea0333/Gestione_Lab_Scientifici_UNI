@@ -8,7 +8,7 @@
                 {% csrf_token %}
                 {{ form.as_p }}
                 <div class="d-flex gap-2 mt-4">
-                    <button type="submit" class="btn btn-success">Salva Progetto</button>
+                    <button type="submit" class="btn btn-custom-primary">Salva Progetto</button>
                     <a href="{% url 'dashboard_professore' %}" class="btn btn-outline-secondary">Annulla</a>
                 </div>
             </form>
