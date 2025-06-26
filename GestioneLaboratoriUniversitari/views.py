@@ -517,7 +517,7 @@ def partecipa_esperimento_view(request, esperimento_id):
 def elimina_progetto_view_vulnerabile(request, progetto_id):
     progetto = get_object_or_404(ProgettoSperimentale, id_progetto=progetto_id)
 
-    #DISATTIVIAMO LA PROTEZIONE  CHE ABBIAMO IMPLEMENTATO
+    #DISATTIVIAMO LA PROTEZIONE
     # if progetto.docente.matricola != request.session.get('matricola'):
     #     messages.error(request, "Non sei autorizzato a eseguire questa operazione.")
     #     return redirect('dashboard_professore')
