@@ -1,7 +1,7 @@
 # UniLabManager – Sistema di Gestione Laboratori Universitari
 
 Questo progetto è un'applicazione web sviluppata in Django per la gestione centralizzata delle attività didattiche e sperimentali all'interno dei laboratori universitari. 
-L'obiettivo è offrire un'interfaccia moderna ed efficiente per la creazione e supervisione di progetti scientifici, la gestione di esperimenti e la prenotazione di attrezzature, con ruoli e permessi differenziati per Professori, Studenti e Tecnici. [cite: 2, 3]
+L'obiettivo è offrire un'interfaccia moderna ed efficiente per la creazione e supervisione di progetti scientifici, la gestione di esperimenti e la prenotazione di attrezzature, con ruoli e permessi differenziati per Professori, Studenti e Tecnici. 
 
 Il sistema simula un contesto accademico reale, garantendo l'integrità dei dati e la sicurezza degli accessi attraverso un'architettura personalizzata basata su ruoli. 
 
