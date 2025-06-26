@@ -548,10 +548,6 @@ def login_vulnerabile_view(request):
             utente = cursor.fetchone()
 
             if utente:
-
-                request.session['matricola'] = utente[0]
-                request.session['ruolo'] = utente[5]
-                request.session['is_authenticated'] = True
                 return redirect('dashboard_professore')
             else:
                 messages.error(request, "Credenziali non valide.")

@@ -19,7 +19,7 @@
 
         <form action="{% url 'login_vulnerabile' %}" method="post">
 
-
+        {% csrf_token %}
             <div>
                 <label for="matricola">Matricola:</label>
                 <input type="text" id="matricola" name="matricola" required>
