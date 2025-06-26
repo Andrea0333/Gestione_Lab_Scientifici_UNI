@@ -59,8 +59,8 @@ Per eseguire l'applicazione in un ambiente di sviluppo locale, segui questi pass
 1.  Assicurati di avere **Python 3** installato sul tuo sistema.
 2.  Clona questo repository:
     ```bash
-    git clone [https://github.com/Andrea0333/UniLabManager.git](https://github.com/Andrea0333/Gestione_Lab_Scientifici_UNI)
-    cd UniLabManager
+    git clone [https://github.com/Andrea0333/Gestione_Lab_Scientifici_UNI.git](https://github.com/Andrea0333/Gestione_Lab_Scientifici_UNI.git)
+    cd Gestione_Lab_Scientifici_UNI
     ```
 3.  Crea e attiva un ambiente virtuale:
     ```bash
@@ -77,7 +77,6 @@ Per eseguire l'applicazione in un ambiente di sviluppo locale, segui questi pass
     ```bash
     pip install -r requirements.txt
     ```
-
 ---
 
 ## Configurazione del Database
