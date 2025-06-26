@@ -103,25 +103,8 @@ L'applicazione sarà accessibile all'indirizzo **http://127.0.0.1:8000/**.
 
 ---
 
-## Interfaccia Web
 
-**Flusso Utente (Registrazione e Login)**
 
-![Pagina di Registrazione](URL_SCREENSHOT_REGISTRAZIONE)
-
-**Dashboard Professore**
-
-![Dashboard Professore con Progetti](URL_SCREENSHOT_DASHBOARD_PROF)
-
-**Dashboard Studente**
-
-![Dashboard Studente con Progetti Disponibili](URL_SCREENSHOT_DASHBOARD_STUD)
-
-**Dashboard Tecnico**
-
-![Dashboard Tecnico con Attrezzature](URL_SCREENSHOT_DASHBOARD_TEC)
-
----
 
 ## Licenza
 
