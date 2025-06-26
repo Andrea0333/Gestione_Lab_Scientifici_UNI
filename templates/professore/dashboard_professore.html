@@ -6,7 +6,7 @@
   <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
     <div>
       <h3>Dashboard Professore</h3>
-      <p class="text-muted mb-0">Benvenuto, {{ professore.nome }} {{ professore.cognome }}, {{ professore.matricola }} !</p>
+      <p class="text-muted mb-0">Benvenuto/a, {{ professore.nome }} {{ professore.cognome }}, {{ professore.matricola }} !</p>
     </div>
     <div class="d-flex gap-2">
       {#  creazione di un nuovo progetto #}
@@ -50,8 +50,8 @@
                      <i class="bi bi-trash3 me-1"></i>Elimina
                 </a>
                   {# LINK PER TESTARE MANIPOLAZIONE URL #}
-                 <a href="{% url 'elimina_progetto_vulnerabile' progetto.id_progetto %}" class="btn btn-warning btn-sm">Elimina (Vulnerabile)
-                 </a>
+                {#   <a href="{% url 'elimina_progetto_vulnerabile' progetto.id_progetto %}" class="btn btn-warning btn-sm">Elimina (Vulnerabile)#}
+                {# </a>#}
 
               </div>
 

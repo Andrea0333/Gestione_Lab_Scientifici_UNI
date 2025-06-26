@@ -63,7 +63,7 @@ class Attrezzatura(models.Model):
     stato = models.CharField(max_length=20, choices=StatoAttrezzatura.choices)
 
     def __str__(self):
-        return f"{self.tipo} ({self.codice_inventario})"
+        return self.tipo
 
 
 class ProgettoSperimentale(models.Model):

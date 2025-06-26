@@ -136,8 +136,7 @@ class ProgettoSperimentaleForm(forms.ModelForm):
         }
 
 
-# forms.py
-from .models import Laboratorio, Attrezzatura
+
 
 
 class CreaEsperimentoForm(forms.Form):
