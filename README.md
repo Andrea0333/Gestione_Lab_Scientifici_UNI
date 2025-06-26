@@ -15,7 +15,6 @@ Il sistema simula un contesto accademico reale, garantendo l'integrità dei dati
 - [Installazione](#installazione)
 - [Configurazione del Database](#configurazione-del-database)
 - [Utilizzo](#utilizzo)
-- [Interfaccia Web](#interfaccia-web)
 - [Licenza](#licenza)
 
 ---
