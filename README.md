@@ -23,7 +23,7 @@ Il sistema simula un contesto accademico reale, garantendo l'integrità dei dati
 
 Il modello E-R del progetto è stato progettato per supportare le interazioni tra utenti, progetti, esperimenti e risorse di laboratorio, adottando una generalizzazione con accorpamento nel padre per l'entità Utente. 
 
-![Modello E-R](ModelloE-R_finale.png)
+![Modello E-R](ModelloE-R Finale.png)
 
 ---
 
